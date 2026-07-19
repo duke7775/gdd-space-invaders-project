@@ -13,13 +13,13 @@ public class Game extends JFrame  {
         titleScene = new TitleScene(this);
         scene1 = new Scene1(this);
         initUI();
-        // loadTitle();
-        loadScene2();
+        loadTitle();
+        //loadScene2();
     }
 
     private void initUI() {
 
-        setTitle("Space Invaders");
+        setTitle("Nova Storm");
         setSize(Global.BOARD_WIDTH, Global.BOARD_HEIGHT);
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
