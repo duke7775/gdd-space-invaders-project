@@ -16,6 +16,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Toolkit;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -36,6 +37,13 @@ public class Scene1 extends JPanel {
     private List<Explosion> explosions;
     private List<Shot> shots;
     private Player player;
+    //Background
+    private Image[] backgrounds;
+    private int[] backgroundRepeatCounts;
+    private int currentBackgroundIndex = 0;
+    private int currentBackgroundRepeat = 0;
+    private int backgroundY = 0;
+    private static final int BACKGROUND_SCROLL_SPEED = 1;
     // private Shot shot;
 
     final int BLOCKHEIGHT = 50;
@@ -167,70 +175,34 @@ public class Scene1 extends JPanel {
         // }
         // }
         player = new Player();
+        backgrounds = new Image[] {
+            new ImageIcon("src/images/s1.jpeg").getImage(),
+            new ImageIcon("src/images/s1_2.jpeg").getImage(),
+            new ImageIcon("src/images/s1_3.jpeg").getImage(),
+        };
+        backgroundRepeatCounts = new int[] { 1, 4, Integer.MAX_VALUE };
         // shot = new Shot();
     }
 
     private void drawMap(Graphics g) {
-        // Draw scrolling starfield background
+    Image currentBackground = backgrounds[currentBackgroundIndex];
+    int nextIndex = Math.min(currentBackgroundIndex + 1, backgrounds.length - 1);
+    Image nextBackground = backgrounds[nextIndex];
+    g.drawImage(currentBackground,
+            0,
+            backgroundY,
+            BOARD_WIDTH,
+            BOARD_HEIGHT,
+            this);
 
-        // Calculate smooth scrolling offset (1 pixel per frame)
-        int scrollOffset = (frame) % BLOCKHEIGHT;
-
-        // Calculate which rows to draw based on screen position
-        int baseRow = (frame) / BLOCKHEIGHT;
-        int rowsNeeded = (BOARD_HEIGHT / BLOCKHEIGHT) + 2; // +2 for smooth scrolling
-
-        // Loop through rows that should be visible on screen
-        for (int screenRow = 0; screenRow < rowsNeeded; screenRow++) {
-            // Calculate which MAP row to use (with wrapping)
-            int mapRow = (baseRow + screenRow) % MAP.length;
-
-            // Calculate Y position for this row
-            // int y = (screenRow * BLOCKHEIGHT) - scrollOffset;
-            int y = BOARD_HEIGHT - ( (screenRow * BLOCKHEIGHT) - scrollOffset );
-
-            // Skip if row is completely off-screen
-            if (y > BOARD_HEIGHT || y < -BLOCKHEIGHT) {
-                continue;
-            }
-
-            // Draw each column in this row
-            for (int col = 0; col < MAP[mapRow].length; col++) {
-                if (MAP[mapRow][col] == 1) {
-                    // Calculate X position
-                    int x = col * BLOCKWIDTH;
-
-                    // Draw a cluster of stars
-                    drawStarCluster(g, x, y, BLOCKWIDTH, BLOCKHEIGHT);
-                }
-            }
-        }
-
-    }
-
-    private void drawStarCluster(Graphics g, int x, int y, int width, int height) {
-        // Set star color to white
-        g.setColor(Color.WHITE);
-
-        // Draw multiple stars in a cluster pattern
-        // Main star (larger)
-        int centerX = x + width / 2;
-        int centerY = y + height / 2;
-        g.fillOval(centerX - 2, centerY - 2, 4, 4);
-
-        // Smaller surrounding stars
-        g.fillOval(centerX - 15, centerY - 10, 2, 2);
-        g.fillOval(centerX + 12, centerY - 8, 2, 2);
-        g.fillOval(centerX - 8, centerY + 12, 2, 2);
-        g.fillOval(centerX + 10, centerY + 15, 2, 2);
-
-        // Tiny stars for more detail
-        g.fillOval(centerX - 20, centerY + 5, 1, 1);
-        g.fillOval(centerX + 18, centerY - 15, 1, 1);
-        g.fillOval(centerX - 5, centerY - 18, 1, 1);
-        g.fillOval(centerX + 8, centerY + 20, 1, 1);
-    }
-
+    g.drawImage(nextBackground,
+            0,
+            backgroundY - BOARD_HEIGHT,
+            BOARD_WIDTH,
+            BOARD_HEIGHT,
+            this);
+}
+    
     private void drawAliens(Graphics g) {
 
         for (Enemy enemy : enemies) {
@@ -408,6 +380,20 @@ public class Scene1 extends JPanel {
         }
 
         // player
+        // Background scroll
+        backgroundY += BACKGROUND_SCROLL_SPEED;
+        if (backgroundY >= BOARD_HEIGHT) {
+            backgroundY = 0;
+            currentBackgroundRepeat++;
+
+            if (currentBackgroundRepeat >= backgroundRepeatCounts[currentBackgroundIndex]) {
+                if (currentBackgroundIndex < backgrounds.length - 1) {
+                    currentBackgroundIndex++;
+                    currentBackgroundRepeat = 0;
+                }
+            }
+        }
+
         player.act();
 
         // Power-ups

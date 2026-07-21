@@ -7,10 +7,10 @@ import javax.swing.ImageIcon;
 
 public class Player extends Sprite {
 
-    private static final int START_X = 270;
-    private static final int START_Y = 540;
     private int width;
+    private int height;
     private int currentSpeed = 2;
+    private int dy = 0;
 
     private Rectangle bounds = new Rectangle(175,135,17,32);
 
@@ -26,9 +26,11 @@ public class Player extends Sprite {
                 ii.getIconHeight() * SCALE_FACTOR,
                 java.awt.Image.SCALE_SMOOTH);
         setImage(scaledImage);
+        width = scaledImage.getWidth(null);
+        height = scaledImage.getHeight(null);
 
-        setX(START_X);
-        setY(START_Y);
+        setX((BOARD_WIDTH - width) / 2);
+        setY(BOARD_HEIGHT - height - 20);
     }
 
     public int getSpeed() {
@@ -45,13 +47,22 @@ public class Player extends Sprite {
 
     public void act() {
         x += dx;
+        y += dy;
 
-        if (x <= 2) {
-            x = 2;
+        if (x <= 0) {
+            x = 0;
         }
 
-        if (x >= BOARD_WIDTH - 2 * width) {
-            x = BOARD_WIDTH - 2 * width;
+        if (x >= BOARD_WIDTH - width) {
+            x = BOARD_WIDTH - width;
+        }
+
+        if (y <= 0) {
+            y = 0;
+        }
+
+        if (y >= BOARD_HEIGHT - height) {
+            y = BOARD_HEIGHT - height;
         }
     }
 
@@ -65,6 +76,14 @@ public class Player extends Sprite {
         if (key == KeyEvent.VK_RIGHT) {
             dx = currentSpeed;
         }
+
+        if (key == KeyEvent.VK_UP) {
+            dy = -currentSpeed;
+        }
+
+        if (key == KeyEvent.VK_DOWN) {
+            dy = currentSpeed;
+        }
     }
 
     public void keyReleased(KeyEvent e) {
@@ -76,6 +95,10 @@ public class Player extends Sprite {
 
         if (key == KeyEvent.VK_RIGHT) {
             dx = 0;
+        }
+
+        if (key == KeyEvent.VK_UP || key == KeyEvent.VK_DOWN) {
+            dy = 0;
         }
     }
 }

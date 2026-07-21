@@ -99,17 +99,17 @@ public class TitleScene extends JPanel {
             g.setColor(Color.white);
         }
 
-        g.setFont(g.getFont().deriveFont(32f));
+        g.setFont(g.getFont().deriveFont(36f));
         String text = "Press SPACE to Start";
         int stringWidth = g.getFontMetrics().stringWidth(text);
         int x = (d.width - stringWidth) / 2;
         // int stringHeight = g.getFontMetrics().getAscent();
         // int y = (d.height + stringHeight) / 2;
-        g.drawString(text, x, 600);
+        g.drawString(text, x, 650);
 
         g.setColor(Color.gray);
         g.setFont(g.getFont().deriveFont(10f));
-        g.drawString("YOUAI LU", 10, 650);
+        g.drawString("YOUAI LU", 840, 800);
 
         Toolkit.getDefaultToolkit().sync();
     }
