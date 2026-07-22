@@ -22,12 +22,14 @@ public class Player extends Sprite {
         var ii = new ImageIcon(IMG_PLAYER);
 
         // Scale the image to use the global scaling factor
-        var scaledImage = ii.getImage().getScaledInstance(ii.getIconWidth() * SCALE_FACTOR,
-                ii.getIconHeight() * SCALE_FACTOR,
+        int scaledWidth = ii.getIconWidth() * SCALE_FACTOR;
+        int scaledHeight = ii.getIconHeight() * SCALE_FACTOR;
+        var scaledImage = ii.getImage().getScaledInstance(scaledWidth,
+                scaledHeight,
                 java.awt.Image.SCALE_SMOOTH);
         setImage(scaledImage);
-        width = scaledImage.getWidth(null);
-        height = scaledImage.getHeight(null);
+        width = scaledWidth;
+        height = scaledHeight;
 
         setX((BOARD_WIDTH - width) / 2);
         setY(BOARD_HEIGHT - height - 20);
@@ -61,8 +63,9 @@ public class Player extends Sprite {
             y = 0;
         }
 
-        if (y >= BOARD_HEIGHT - height) {
-            y = BOARD_HEIGHT - height;
+        int bottomBound = BOARD_HEIGHT - height - 10;
+        if (y >= bottomBound) {
+            y = bottomBound;
         }
     }
 

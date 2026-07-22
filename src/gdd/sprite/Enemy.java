@@ -1,6 +1,7 @@
 package gdd.sprite;
 
 import static gdd.Global.*;
+import java.util.Random;
 import javax.swing.ImageIcon;
 
 public class Enemy extends Sprite {
@@ -31,7 +32,29 @@ public class Enemy extends Sprite {
     public void act(int direction) {
 
         this.x += direction;
+        //prevent enemy going off screen
+        if (x < 0) {
+            x = 0;
+        }
+
+        if (image != null) {
+            int maxX = BOARD_WIDTH - image.getWidth(null);
+            if (x > maxX) {
+                x = maxX;
+            }
+        }
     }
+
+    public Bomb getBomb() {
+        return null;
+    }
+
+    public void attack(Player player, Random randomizer) {
+        
+    }
+    public void damage() {
+    setDying(true);
+}
 /* 
     public Bomb getBomb() {
 
