@@ -1,20 +1,22 @@
 package gdd;
 
 import gdd.scene.Scene1;
+import gdd.scene.Scene2;
 import gdd.scene.TitleScene;
+import gdd.sprite.Player;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 public class Game extends JFrame  {
 
-    TitleScene titleScene;
-    Scene1 scene1;
+    private TitleScene titleScene;
+    private Scene1 scene1;
+    private Scene2 scene2;
+    private JPanel currentScene;
 
     public Game() {
-        titleScene = new TitleScene(this);
-        scene1 = new Scene1(this);
         initUI();
         loadTitle();
-        //loadScene2();
     }
 
     private void initUI() {
@@ -28,24 +30,48 @@ public class Game extends JFrame  {
 
     }
 
-    public void loadTitle() {
-        getContentPane().removeAll();
-        // add(new Title(this));
-        add(titleScene);
+        public void loadTitle() {
+        stopCurrentScene();
+        titleScene = new TitleScene(this);
+        showScene(titleScene);
         titleScene.start();
-        revalidate();
-        repaint();
     }
 
     public void loadScene1() {
-        // ....
+        stopCurrentScene();
+        scene1 = new Scene1(this);
+        showScene(scene1);
+        scene1.start();
     }
 
-    public void loadScene2() {
-        getContentPane().removeAll();
-        add(scene1);
-        titleScene.stop();
-        scene1.start();
+    public void loadScene2(Player player) {
+        stopCurrentScene();
+        scene2 = new Scene2(this, player);
+        showScene(scene2);
+        scene2.start();
+    }
+
+    private void stopCurrentScene() {
+        if (currentScene == null) {
+            return;
+        }
+
+        if (currentScene instanceof TitleScene title) {
+            title.stop();
+        } else if (currentScene instanceof Scene1 s1) {
+            s1.stop();
+        } else if (currentScene instanceof Scene2 s2) {
+            s2.stop();
+        }
+
+        remove(currentScene);
+        currentScene = null;
+    }
+
+    private void showScene(JPanel scene) {
+        currentScene = scene;
+        add(scene);
+        scene.requestFocusInWindow();
         revalidate();
         repaint();
     }

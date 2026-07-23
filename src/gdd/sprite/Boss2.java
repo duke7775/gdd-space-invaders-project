@@ -4,21 +4,21 @@ import static gdd.Global.*;
 import java.util.Random;
 import javax.swing.ImageIcon;
 
-public class Boss extends Enemy {
+public class Boss2 extends Enemy {
     private Bomb bomb;
-    private int hp = 1;
+    private int hp = 100;
     private int maxHp = 100;
 
     private int speed = 2;
     private int moveDirection = 1;
     private int attackCooldown = 0;
 
-    public Boss(int x, int y) {
+    public Boss2(int x, int y) {
         super(x, y);
 
         bomb = new Bomb(x, y);
 
-        var ii = new ImageIcon("src/images/boss.png");
+        var ii = new ImageIcon("src/images/boss2.png");
         var scaledImage = ii.getImage().getScaledInstance(
         180,
         120,
@@ -70,7 +70,7 @@ public class Boss extends Enemy {
 
     public void damage() {
         hp--;
-        System.out.println("Boss HP = " + hp);
+        System.out.println("Boss2 HP = " + hp);
         if (hp <= 0) {
             setDying(true);
         }

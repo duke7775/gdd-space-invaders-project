@@ -40,6 +40,8 @@ public class Scene1 extends JPanel {
     private List<Shot> shots;
     private Player player;
     private boolean bossSpawned = false;
+    private boolean bossDefeated = false;
+    private boolean stageClear = false;
     //Background
     private Image[] backgrounds;
     private int[] backgroundRepeatCounts;
@@ -65,6 +67,9 @@ public class Scene1 extends JPanel {
 
     private Timer timer;
     private final Game game;
+    private boolean showingStageComplete = false;
+    private int stageCompleteTimer = 0;
+    private static final int STAGE_COMPLETE_DURATION = 180; //3 s
 
     private int currentRow = -1;
     // TODO load this map from a file
@@ -106,6 +111,10 @@ public class Scene1 extends JPanel {
         // initBoard();
         // gameInit();
         loadSpawnDetails();
+    }
+
+    public Player getPlayer() {
+        return player;
     }
 
     private void initAudio() {
@@ -198,6 +207,8 @@ public class Scene1 extends JPanel {
         };
         backgroundRepeatCounts = new int[] { 1, 4, Integer.MAX_VALUE };
         // shot = new Shot();
+        bossDefeated = false;
+        stageClear = false;
     }
 
     private void drawMap(Graphics g) {
@@ -245,6 +256,33 @@ public class Scene1 extends JPanel {
             }
         }
         enemies.removeAll(enemiesToRemove);
+    }
+    //Draw boss health 
+    private void drawBossHealthBar(Graphics g) {
+        final int barWidth = 320;
+        final int barHeight = 18;
+        final int barX = (BOARD_WIDTH - barWidth) / 2;
+        final int barY = 18;
+
+        for (Enemy enemy : enemies) {
+            if (enemy instanceof Boss boss && boss.isVisible()) {
+                float ratio = boss.getMaxHp() == 0 ? 0 : (float) boss.getHp() / boss.getMaxHp();
+                int currentWidth = (int) (barWidth * Math.max(0, Math.min(1f, ratio)));
+
+                g.setColor(new Color(0, 0, 0, 150));
+                g.fillRoundRect(barX - 10, barY - 8, barWidth + 20, barHeight + 24, 12, 12);
+
+                g.setColor(Color.DARK_GRAY);
+                g.fillRoundRect(barX, barY, barWidth, barHeight, 10, 10);
+
+                g.setColor(new Color(220, 0, 0));
+                g.fillRoundRect(barX + 2, barY + 2, Math.max(0, currentWidth - 4), barHeight - 4, 8, 8);
+
+                g.setColor(Color.WHITE);
+                g.drawRoundRect(barX, barY, barWidth, barHeight, 10, 10);
+                break;
+            }
+        }
     }
 
     private void drawPowreUps(Graphics g) {
@@ -338,10 +376,14 @@ public class Scene1 extends JPanel {
             drawExplosions(g);
             drawPowreUps(g);
             drawAliens(g);
+            drawBossHealthBar(g);
             drawBombing(g);
             drawPlayer(g);
             drawShot(g);
 
+            if (showingStageComplete) {
+            drawStageComplete(g);
+        }
         } else {
 
             if (timer.isRunning()) {
@@ -353,6 +395,78 @@ public class Scene1 extends JPanel {
 
         Toolkit.getDefaultToolkit().sync();
     }
+    // ...existing code...
+
+private void drawStageComplete(Graphics g) {
+    
+    // 深色半透明背景
+    g.setColor(new Color(0, 0, 0, 180));
+    g.fillRect(0, 0, BOARD_WIDTH, BOARD_HEIGHT);
+    
+    // ===== 修正: 主面板背景居中 =====
+    int panelWidth = 600;
+    int panelHeight = 280;
+    int panelX = (BOARD_WIDTH - panelWidth) / 2;  // 水平居中
+    int panelY = (BOARD_HEIGHT - panelHeight) / 2;  // 垂直居中
+    
+    g.setColor(new Color(20, 30, 50, 230));
+    g.fillRoundRect(panelX, panelY, panelWidth, panelHeight, 20, 20);
+    
+    // 金色边框
+    g.setColor(new Color(255, 215, 0));
+    g.drawRoundRect(panelX, panelY, panelWidth, panelHeight, 20, 20);
+    
+    // ===== 标题 "MISSION COMPLETE" =====
+    g.setColor(new Color(255, 220, 0));
+    g.setFont(new Font("Arial", Font.BOLD, 48));
+    String title = "MISSION COMPLETE";
+    int titleWidth = g.getFontMetrics().stringWidth(title);
+    g.drawString(title, (BOARD_WIDTH - titleWidth) / 2, panelY + 70);
+    
+    // 标题下方横线
+    g.setColor(new Color(255, 215, 0));
+    int lineWidth = 360;
+    g.fillRect((BOARD_WIDTH - lineWidth) / 2, panelY + 90, lineWidth, 2);
+    
+    // ===== "Stage 1 Cleared" =====
+    g.setColor(new Color(100, 255, 100));
+    g.setFont(new Font("Arial", Font.BOLD, 30));
+    String cleared = "Stage 1 Cleared";
+    int clearedWidth = g.getFontMetrics().stringWidth(cleared);
+    g.drawString(cleared, (BOARD_WIDTH - clearedWidth) / 2, panelY + 140);
+    
+    // ===== "Next Mission" =====
+    g.setColor(new Color(200, 200, 255));
+    g.setFont(new Font("Arial", Font.PLAIN, 22));
+    String next = "Next Mission";
+    int nextWidth = g.getFontMetrics().stringWidth(next);
+    g.drawString(next, (BOARD_WIDTH - nextWidth) / 2, panelY + 185);
+    
+    // ===== "Alien Planet" =====
+    g.setColor(new Color(0, 255, 255));
+    g.setFont(new Font("Arial", Font.BOLD, 32));
+    String planet = "Alien Planet";
+    int planetWidth = g.getFontMetrics().stringWidth(planet);
+    g.drawString(planet, (BOARD_WIDTH - planetWidth) / 2, panelY + 225);
+    
+    // ===== 底部进度条 =====
+    int barWidth = 400;
+    int barHeight = 6;
+    int barX = (BOARD_WIDTH - barWidth) / 2;
+    int barY = panelY + 255;
+    
+    // 进度条背景
+    g.setColor(new Color(60, 60, 80));
+    g.fillRoundRect(barX, barY, barWidth, barHeight, 3, 3);
+    
+    // 进度
+    float progress = Math.min(1f, (float)stageCompleteTimer / STAGE_COMPLETE_DURATION);
+    int currentWidth = (int)(barWidth * progress);
+    
+    g.setColor(new Color(0, 200, 255));
+    g.fillRoundRect(barX, barY, currentWidth, barHeight, 3, 3);
+}
+
 
     private void gameOver(Graphics g) {
 
@@ -402,12 +516,6 @@ public class Scene1 extends JPanel {
             }
         }
 
-        if (deaths == NUMBER_OF_ALIENS_TO_DESTROY) {
-            inGame = false;
-            timer.stop();
-            message = "Game won!";
-        }
-
         // player
         // Background scroll
         backgroundY += BACKGROUND_SCROLL_SPEED;
@@ -432,8 +540,13 @@ public class Scene1 extends JPanel {
                 if (powerup.collidesWith(player)) {
                     powerup.upgrade(player);
                 }
+                if(powerup.getY() > BOARD_HEIGHT) {
+                    powerup.die();
             }
         }
+    }
+        powerups.removeIf(powerup -> !powerup.isVisible());
+    
 
         // Enemies
         for (Enemy enemy : enemies) {
@@ -465,12 +578,14 @@ public class Scene1 extends JPanel {
                         && shotY <= enemyY + enemyHeight) {
                         
 
-                    if (enemy instanceof Boss) {
+                    if (enemy instanceof Boss boss) {
+                        boss.damage(); 
+                        if(boss.isDying()) {
+                            bossDefeated = true;
+                            spawnBossPowerUps(boss);
+                        }
 
-                        Boss boss = (Boss) enemy;
-                        boss.damage();
-
-                    } else {
+                        } else {
 
                     var ii = new ImageIcon(IMG_EXPLOSION);
                     enemy.setImage(ii.getImage());
@@ -481,6 +596,7 @@ public class Scene1 extends JPanel {
 
                 shot.die();
                 shotsToRemove.add(shot);
+                break;
             }
         }
 
@@ -498,33 +614,7 @@ public class Scene1 extends JPanel {
         }
         shots.removeAll(shotsToRemove);
 
-        // enemies
-        // for (Enemy enemy : enemies) {
-        //     int x = enemy.getX();
-        //     if (x >= BOARD_WIDTH - BORDER_RIGHT && direction != -1) {
-        //         direction = -1;
-        //         for (Enemy e2 : enemies) {
-        //             e2.setY(e2.getY() + GO_DOWN);
-        //         }
-        //     }
-        //     if (x <= BORDER_LEFT && direction != 1) {
-        //         direction = 1;
-        //         for (Enemy e : enemies) {
-        //             e.setY(e.getY() + GO_DOWN);
-        //         }
-        //     }
-        // }
-        // for (Enemy enemy : enemies) {
-        //     if (enemy.isVisible()) {
-        //         int y = enemy.getY();
-        //         if (y > GROUND - ALIEN_HEIGHT) {
-        //             inGame = false;
-        //             message = "Invasion!";
-        //         }
-        //         enemy.act(direction);
-        //     }
-        // }
-        // enemy horizontal movement
+
         for (Enemy enemy : enemies) {
             int x = enemy.getX();
             if (x >= BOARD_WIDTH - BORDER_RIGHT && direction != -1) {
@@ -588,6 +678,56 @@ public class Scene1 extends JPanel {
                 }
             }
         }
+
+        checkStageClearAndAdvance();
+    }
+
+    //After boss, spawn power ups
+    private void spawnBossPowerUps(Boss boss) {
+        int baseX = boss.getX();
+        int baseY = boss.getY();
+        powerups.add(new SpeedUp(baseX - 40, baseY));
+        powerups.add(new SpeedUp(baseX, baseY));
+        powerups.add(new SpeedUp(baseX + 40, baseY));
+    }
+
+    //check if the scene is clear
+    private void checkStageClearAndAdvance() {
+    
+        if (bossDefeated && !stageClear) {
+        
+        // check all power-ups collected
+            boolean allPowerUpsCollected = true;
+            for (PowerUp powerup : powerups) {
+                if (powerup.isVisible()) {
+                    allPowerUpsCollected = false;
+                    break;
+            }
+        }
+        
+        // all power-ups collected
+        if (allPowerUpsCollected) {
+            stageClear = true;
+            showingStageComplete = true;
+            stageCompleteTimer = 0;
+        }
+    }
+
+        if (showingStageComplete) {
+            stageCompleteTimer++;
+        
+    
+            if (stageCompleteTimer >= STAGE_COMPLETE_DURATION) {
+                transitionToScene2();
+            }
+        }
+    }
+
+    // Removed duplicate checkStageClearAndAdvance method
+
+    private void transitionToScene2() {
+        stop();
+        game.loadScene2(player);
     }
 
     private void doGameCycle() {
